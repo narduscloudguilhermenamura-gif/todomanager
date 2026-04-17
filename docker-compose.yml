@@ -1,0 +1,32 @@
+services:
+  oracle-xe:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: petrobras-oracle-xe
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: petro
+      APP_USER_PASSWORD: petro
+    ports:
+      - "1521:1521"
+    volumes:
+      - ./database/init.sql:/container-entrypoint-initdb.d/20-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -s system/oracle@localhost:1521/XEPDB1 > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  api:
+    build:
+      context: .
+      dockerfile: Petrobras.TodoManager.API/Dockerfile
+    container_name: petrobras-todomanager-api
+    environment:
+      ASPNETCORE_URLS: http://+:5000
+      ConnectionStrings__OracleDb: User Id=petro;Password=petro;Data Source=oracle-xe:1521/XEPDB1
+    ports:
+      - "5000:5000"
+    depends_on:
+      oracle-xe:
+        condition: service_healthy
