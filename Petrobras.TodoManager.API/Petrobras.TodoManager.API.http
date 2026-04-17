@@ -1,0 +1,6 @@
+@Petrobras.TodoManager.API_HostAddress = http://localhost:5031
+
+GET {{Petrobras.TodoManager.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
